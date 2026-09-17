@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCA Freshers 2026 - QR Pass & Scanner System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('dashboard')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20">
+                        <i class="fas fa-qrcode text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-base font-extrabold text-slate-900 tracking-tight leading-none">BCA Freshers 2026</h1>
+                            <span class="px-2 py-0.5 rounded-full text-3xs font-black uppercase tracking-wider bg-blue-100 text-blue-800">1st &bull; 3rd Sem</span>
+                        </div>
+                        <p class="text-xs text-slate-500 font-medium">Real-Time Pass &amp; Scanner System</p>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex items-center space-x-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
+                    <button onclick="switchView('dashboard')" data-view="dashboard" class="nav-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-blue-600 text-white shadow-sm">
+                        <i class="fas fa-chart-pie"></i> <span>Dashboard</span>
+                    </button>
+                    <button onclick="switchView('students')" data-view="students" class="nav-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100">
+                        <i class="fas fa-users"></i> <span>Students &amp; Sheets</span>
+                    </button>
+                    <button onclick="switchView('scanner')" data-view="scanner" class="nav-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100">
+                        <i class="fas fa-camera"></i> <span>QR Scanner</span>
+                    </button>
+                    <button onclick="switchView('admins')" data-view="admins" class="nav-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100">
+                        <i class="fas fa-shield-alt"></i> <span>Admins &amp; OTP</span>
+                    </button>
+                    <button onclick="switchView('audit')" data-view="audit" class="nav-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100">
+                        <i class="fas fa-history"></i> <span>Audit Trail</span>
+                    </button>
+                    <button onclick="switchView('settings')" data-view="settings" class="nav-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 hover:bg-slate-100">
+                        <i class="fas fa-cog"></i> <span>Settings</span>
+                    </button>
+                </nav>
+
+                <div class="flex items-center space-x-3">
+                    <div id="cloud-sync-status" class="px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full flex items-center shadow-xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 live-pulse mr-1.5"></span>
+                        <span class="text-xs font-semibold text-emerald-700">Cloud Sync Active</span>
+                    </div>
+
+                    <div class="hidden sm:flex items-center space-x-2 pl-2 border-l border-slate-200 text-xs">
+                        <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                            <i class="fas fa-user-shield text-xs"></i>
+                        </span>
+                        <div>
+                            <strong id="current-scanner-name" class="font-bold text-slate-800 block leading-tight">Gate 1 - Rahul</strong>
+                            <span class="text-3xs text-emerald-600 font-bold uppercase">Approved Admin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="md:hidden flex items-center justify-around border-t border-slate-200 bg-white py-2 px-1 text-2xs font-bold">
+            <button onclick="switchView('dashboard')" class="flex flex-col items-center text-slate-600">
+                <i class="fas fa-chart-pie text-sm"></i> <span>Stats</span>
+            </button>
+            <button onclick="switchView('students')" class="flex flex-col items-center text-slate-600">
+                <i class="fas fa-users text-sm"></i> <span>Students</span>
+            </button>
+            <button onclick="switchView('scanner')" class="flex flex-col items-center text-blue-600">
+                <i class="fas fa-camera text-base"></i> <span>Scanner</span>
+            </button>
+            <button onclick="switchView('admins')" class="flex flex-col items-center text-slate-600">
+                <i class="fas fa-shield-alt text-sm"></i> <span>Admins</span>
+            </button>
+            <button onclick="switchView('audit')" class="flex flex-col items-center text-slate-600">
+                <i class="fas fa-history text-sm"></i> <span>Audit</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- VIEW 1: LIVE DASHBOARD -->
+        <div id="view-dashboard" class="app-view space-y-6">
+            <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-semibold mb-2">
+                                <i class="fas fa-shield-alt"></i> <span>Creator: frsher.party.2k.26@gmail.com</span>
+                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Live Event Attendance Dashboard</h2>
+                            <p class="text-sm text-blue-200/80 mt-1 max-w-xl">
+                                Real-time synchronization across all gate scanners. Duplicate passes are automatically flagged.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="switchView('scanner')" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-900/30 transition flex items-center space-x-2">
+                                <i class="fas fa-camera"></i> <span>Launch QR Scanner</span>
+                            </button>
+                            <a href="/api/export-attendance" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/20 transition flex items-center space-x-2">
+                                <i class="fas fa-file-excel text-emerald-400"></i> <span>Export Excel Attendance</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Metric Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider">Total Invited</span>
+                        <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold"><i class="fas fa-envelope-open-text"></i></span>
+                    </div>
+                    <div class="text-3xl font-black text-slate-900" id="stat-total-invited">0</div>
+                    <div class="text-2xs text-slate-500 mt-1">BCA 1st &amp; 3rd Combined</div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-emerald-200/80 shadow-xs bg-emerald-50/20">
+                    <div class="flex items-center justify-between text-emerald-600 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider">Checked In</span>
+                        <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold"><i class="fas fa-user-check"></i></span>
+                    </div>
+                    <div class="text-3xl font-black text-emerald-700" id="stat-total-checkedin">0</div>
+                    <div class="text-2xs text-emerald-600 font-semibold mt-1">Admitted at Entrance</div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-amber-200/80 shadow-xs bg-amber-50/20">
+                    <div class="flex items-center justify-between text-amber-600 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider">Pending Entry</span>
+                        <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold"><i class="fas fa-hourglass-half"></i></span>
+                    </div>
+                    <div class="text-3xl font-black text-amber-700" id="stat-total-pending">0</div>
+                    <div class="text-2xs text-amber-600 font-semibold mt-1">Yet to arrive</div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-indigo-200/80 shadow-xs bg-indigo-50/20">
+                    <div class="flex items-center justify-between text-indigo-600 mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider">Attendance Rate</span>
+                        <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold"><i class="fas fa-chart-line"></i></span>
+                    </div>
+                    <div class="text-3xl font-black text-indigo-700" id="stat-turnout-rate">0%</div>
+                    <div class="text-2xs text-indigo-600 font-semibold mt-1">Live Turnout Metric</div>
+                </div>
+            </div>
+
+            <!-- Dual Semester Breakdown Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-black">1st</div>
+                            <div>
+                                <h3 class="text-base font-extrabold text-slate-900">BCA 1st Semester</h3>
+                                <p class="text-xs text-slate-500 font-medium">Freshers Batch</p>
+                            </div>
+                        </div>
+                        <span id="bca1-rate-badge" class="px-3 py-1 rounded-full text-xs font-black bg-indigo-100 text-indigo-800">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 mb-4 overflow-hidden">
+                        <div id="bca1-progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
+                        <span class="text-slate-500">Checked In: <strong id="bca1-checkedin" class="text-slate-900 font-bold">0</strong></span>
+                        <span class="text-slate-500">Total Invited: <strong id="bca1-total" class="text-slate-900 font-bold">0</strong></span>
+                        <button onclick="filterSemester('BCA 1st'); switchView('students');" class="text-indigo-600 hover:text-indigo-800 font-bold">
+                            View Sheet <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-black">3rd</div>
+                            <div>
+                                <h3 class="text-base font-extrabold text-slate-900">BCA 3rd Semester</h3>
+                                <p class="text-xs text-slate-500 font-medium">Seniors / Hosts Batch</p>
+                            </div>
+                        </div>
+                        <span id="bca3-rate-badge" class="px-3 py-1 rounded-full text-xs font-black bg-purple-100 text-purple-800">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 mb-4 overflow-hidden">
+                        <div id="bca3-progress-bar" class="bg-purple-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
+                        <span class="text-slate-500">Checked In: <strong id="bca3-checkedin" class="text-slate-900 font-bold">0</strong></span>
+                        <span class="text-slate-500">Total Invited: <strong id="bca3-total" class="text-slate-900 font-bold">0</strong></span>
+                        <button onclick="filterSemester('BCA 3rd'); switchView('students');" class="text-purple-600 hover:text-purple-800 font-bold">
+                            View Sheet <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Check-in Feed -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+                            <span>Live Scanner Feed</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 live-pulse"></span>
+                        </h3>
+                        <p class="text-xs text-slate-500 font-medium">Auto-updates in real time as gate scanners admit guests</p>
+                    </div>
+                    <button onclick="loadDashboardStats()" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-semibold transition">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+                <div id="recent-checkins-feed" class="space-y-2">
+                    <div class="text-xs text-slate-400 py-6 text-center">Connecting to live feed...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: STUDENTS & DUAL SHEETS -->
+        <div id="view-students" class="app-view hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                <div class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900">Student Sheets &amp; Pass Dispatch</h2>
+                        <p class="text-xs text-slate-500 font-medium mt-0.5">Manage BCA 1st &amp; 3rd semester student data, generate QR passes, and send invitations.</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="document.getElementById('add-student-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-xs">
+                            <i class="fas fa-user-plus"></i> <span>Add Student</span>
+                        </button>
+                        <label class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer transition flex items-center space-x-1.5 shadow-xs">
+                            <i class="fas fa-file-upload"></i> <span>Upload Excel (.xlsx)</span>
+                            <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="uploadExcelFile(this)">
+                        </label>
+                        <a href="/api/download-template" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+                            <i class="fas fa-download"></i> <span>Blank Template</span>
+                        </a>
+                        <button onclick="triggerBulkEmail()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-xs">
+                            <i class="fas fa-paper-plane"></i> <span>Bulk Send Emails</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Semester Tab Selector & Search Filters -->
+                <div class="flex flex-wrap items-center justify-between gap-4 pt-4">
+                    <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
+                        <button onclick="filterSemester('all')" data-sem="all" class="sem-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition bg-blue-600 text-white shadow-xs">
+                            All Students
+                        </button>
+                        <button onclick="filterSemester('BCA 1st')" data-sem="BCA 1st" class="sem-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition bg-white text-slate-600">
+                            BCA 1st Sem
+                        </button>
+                        <button onclick="filterSemester('BCA 3rd')" data-sem="BCA 3rd" class="sem-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition bg-white text-slate-600">
+                            BCA 3rd Sem
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <select id="student-status-filter" onchange="loadStudents()" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="checked_in">Checked In</option>
+                        </select>
+                        <div class="relative">
+                            <input type="text" id="student-search-input" oninput="loadStudents()" placeholder="Search roll, name, mobile..." class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 w-48 sm:w-64">
+                            <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                        </div>
+                        <span id="students-count-badge" class="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg whitespace-nowrap">
+                            0 Students
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Data Table -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50/80 text-3xs font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                                <th class="px-4 py-3">Roll No</th>
+                                <th class="px-4 py-3">Student Name</th>
+                                <th class="px-4 py-3">Semester</th>
+                                <th class="px-4 py-3">Phone</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Pass Token</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body" class="divide-y divide-slate-100 text-xs">
+                            <tr><td colspan="7" class="text-center py-8 text-slate-400">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: QR SCANNER & MANUAL FALLBACK -->
+        <div id="view-scanner" class="app-view hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Column: Camera Viewfinder (7 cols) -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="bg-slate-900 rounded-2xl p-5 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+                        <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-800">
+                            <div>
+                                <h3 class="text-sm font-bold flex items-center space-x-2">
+                                    <i class="fas fa-camera text-blue-400"></i>
+                                    <span>Gate Entry Scanner</span>
+                                </h3>
+                                <div id="camera-status-text" class="text-xs text-slate-400">Initializing camera lens...</div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="ScannerController.switchCamera()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-lg transition" title="Switch Front/Back Camera">
+                                    <i class="fas fa-sync-alt mr-1"></i> Flip Camera
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Camera Viewport Box -->
+                        <div class="relative bg-black rounded-xl overflow-hidden flex items-center justify-center min-h-[320px] max-h-[420px]">
+                            <div id="qr-reader" class="w-full h-full"></div>
+                        </div>
+
+                        <!-- Audio and Camera Instructions -->
+                        <div class="mt-3 flex items-center justify-between text-2xs text-slate-400">
+                            <span><i class="fas fa-volume-up text-blue-400 mr-1"></i> Audio cues: Chime (Approved), Buzzer (Duplicate)</span>
+                            <span class="text-emerald-400 font-bold"><i class="fas fa-shield-alt mr-1"></i> Gate 1 Scanner Active</span>
+                        </div>
+                    </div>
+
+                    <!-- Scan Result Card Container -->
+                    <div id="scan-result-card" class="hidden"></div>
+                </div>
+
+                <!-- Right Column: Manual Fallback & Offline Queue (5 cols) -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Manual Search Fallback Card -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+                        <div class="flex items-center space-x-2.5 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                                <i class="fas fa-keyboard"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-slate-900">Manual Search Fallback</h3>
+                                <p class="text-2xs text-slate-500">For guests with dead batteries, cracked screens, or camera glare</p>
+                            </div>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" id="manual-search-input" placeholder="Type student Roll No, Name, or Mobile..." class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 text-slate-800">
+                            <i class="fas fa-search absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+                        </div>
+
+                        <div id="manual-search-results" class="mt-3 border border-slate-100 rounded-xl max-h-60 overflow-y-auto divide-y divide-slate-100 hidden bg-white shadow-sm"></div>
+                    </div>
+
+                    <!-- Offline Mode & Sync Card -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">
+                                    <i class="fas fa-wifi"></i>
+                                </span>
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-slate-900">Offline Resilience</h3>
+                                    <p class="text-2xs text-slate-500">Scans continue during campus Wi-Fi outages</p>
+                                </div>
+                            </div>
+                            <span id="offline-queue-badge" class="px-2 py-0.5 rounded-full text-2xs font-bold bg-slate-100 text-slate-600">
+                                0 Queued
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                            The student roster is pre-cached on this device. If your connection drops, you can continue admitting guests. Scans will auto-sync when connection returns.
+                        </p>
+
+                        <button onclick="OfflineSyncManager.syncQueue(localStorage.getItem('event_admin_token')).then(r => showToast('Synced offline queue!', 'success')).catch(e => showToast('Offline or sync error', 'error'))" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5">
+                            <i class="fas fa-cloud-upload-alt"></i> <span>Sync Queued Scans Now</span>
+                        </button>
+                    </div>
+
+                    <!-- Lost Pass Support Banner -->
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50/40 rounded-2xl p-5 border border-amber-200/80">
+                        <div class="flex items-center space-x-2 text-amber-800 font-bold text-xs mb-1">
+                            <i class="fas fa-life-ring"></i> <span>Lost Pass Support</span>
+                        </div>
+                        <p class="text-2xs text-amber-900/80 mb-3">
+                            Guest lost their invitation email or WhatsApp message? Use the search above or open the Students tab to click "Resend Pass".
+                        </p>
+                        <button onclick="switchView('students')" class="text-xs text-amber-700 hover:text-amber-900 font-bold flex items-center space-x-1">
+                            <span>Go to Students Table</span> <i class="fas fa-arrow-right text-3xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: ADMIN ACCOUNTS & OTP -->
+        <div id="view-admins" class="app-view hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                <div class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900">Admin Accounts &amp; Scanner OTPs</h2>
+                        <p class="text-xs text-slate-500 font-medium mt-0.5">Creator approves volunteer gate scanners and issues 6-digit session passcodes.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="document.getElementById('register-scanner-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+                            <i class="fas fa-user-shield"></i> <span>Register New Scanner</span>
+                        </button>
+                        <button onclick="document.getElementById('admin-login-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+                            <i class="fas fa-key"></i> <span>Login with OTP</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900 leading-relaxed">
+                    <strong class="font-bold"><i class="fas fa-lock mr-1"></i> Zero Outsider Access Policy:</strong>
+                    Only approved accounts with an active 6-digit OTP can unlock camera scanner tools. Outsiders attempting to scan without an approved OTP will receive an authorization rejection.
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-3xs font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                                <th class="px-4 py-3">Admin Name / Email</th>
+                                <th class="px-4 py-3">Phone</th>
+                                <th class="px-4 py-3">Role</th>
+                                <th class="px-4 py-3">Approval Status</th>
+                                <th class="px-4 py-3">6-Digit OTP</th>
+                                <th class="px-4 py-3 text-right">Creator Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admins-table-body" class="divide-y divide-slate-100 text-xs">
+                            <tr><td colspan="6" class="text-center py-8 text-slate-400">Loading admin accounts...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 5: AUDIT TRAIL -->
+        <div id="view-audit" class="app-view hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-900">Event Audit Trail</h2>
+                        <p class="text-xs text-slate-500 font-medium mt-0.5">Chronological log recording which admin scanned whom, exact timestamps, and duplicate attempts.</p>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="audit-search-input" oninput="loadAuditLogs()" placeholder="Search student, admin, or action..." class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 w-64">
+                        <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-3xs font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                                <th class="px-4 py-3">Timestamp</th>
+                                <th class="px-4 py-3">Student</th>
+                                <th class="px-4 py-3">Verified By</th>
+                                <th class="px-4 py-3">Method</th>
+                                <th class="px-4 py-3">Result Action</th>
+                                <th class="px-4 py-3">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body" class="divide-y divide-slate-100">
+                            <tr><td colspan="6" class="text-center py-8 text-slate-400">Loading audit history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 6: SETTINGS & OUTBOX -->
+        <div id="view-settings" class="app-view hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Configuration Form (7 cols) -->
+                <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                    <h2 class="text-lg font-extrabold text-slate-900 mb-1">Event Details &amp; SMTP Dispatcher</h2>
+                    <p class="text-xs text-slate-500 mb-5">Configure party metadata and email delivery settings.</p>
+
+                    <form onsubmit="saveSettings(event)" class="space-y-4 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Event Name</label>
+                            <input type="text" id="cfg-event-name" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Event Date &amp; Time</label>
+                                <input type="text" id="cfg-event-date" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Venue Location</label>
+                                <input type="text" id="cfg-venue" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Creator Email (Superadmin)</label>
+                            <input type="email" id="cfg-creator-email" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100">
+                            <h3 class="font-extrabold text-slate-900 text-sm mb-1">Live SMTP Email Settings</h3>
+                            <p class="text-2xs text-slate-500 mb-3">Optional. If empty, emails will run in Simulated Mode and save to Outbox.</p>
+
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">SMTP Server</label>
+                                    <input type="text" id="cfg-smtp-server" placeholder="smtp.gmail.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                                </div>
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">Port</label>
+                                    <input type="number" id="cfg-smtp-port" placeholder="587" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">SMTP User / Email</label>
+                                    <input type="text" id="cfg-smtp-user" placeholder="your-email@gmail.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                                </div>
+                                <div>
+                                    <label class="block font-bold text-slate-700 mb-1">App Password</label>
+                                    <input type="password" id="cfg-smtp-password" placeholder="16-character app password" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-3">
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-xs transition">
+                                Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Outbox Logs (5 cols) -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+                    <h2 class="text-lg font-extrabold text-slate-900 mb-1">Outbox &amp; Delivery Log</h2>
+                    <p class="text-xs text-slate-500 mb-4">Record of sent emails &amp; generated WhatsApp links.</p>
+
+                    <div id="outbox-logs-container" class="space-y-2 max-h-[480px] overflow-y-auto">
+                        <div class="text-xs text-slate-400 py-4 text-center">Loading outbox...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- Pass Preview & Resend Modal -->
+    <div id="pass-preview-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center relative animate-pop">
+            <button onclick="document.getElementById('pass-preview-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times text-base"></i>
+            </button>
+
+            <div class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Entry Pass Preview</div>
+            <h3 id="modal-pass-name" class="text-lg font-black text-slate-900">Student Name</h3>
+            <div class="text-xs text-slate-500 font-mono mb-4">
+                <span id="modal-pass-roll" class="font-bold text-slate-800">26BCA101</span> &bull; <span id="modal-pass-sem">BCA 1st</span>
+            </div>
+
+            <div class="p-3 bg-white border-2 border-dashed border-slate-200 rounded-xl mb-4">
+                <img id="modal-pass-qr" src="" alt="QR Code" class="w-48 h-48 mx-auto rounded-lg" />
+                <div id="modal-pass-token" class="mt-2 text-2xs font-mono font-bold text-slate-500">PASS-TOKEN</div>
+            </div>
+
+            <div class="space-y-2 text-xs">
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="modal-resend-email-btn" class="py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl transition flex items-center justify-center space-x-1">
+                        <i class="fas fa-envelope"></i> <span>Email Pass</span>
+                    </button>
+                    <button id="modal-resend-wa-btn" class="py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl transition flex items-center justify-center space-x-1">
+                        <i class="fab fa-whatsapp"></i> <span>WhatsApp Pass</span>
+                    </button>
+                </div>
+                <button id="modal-resend-all-btn" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-xs transition flex items-center justify-center space-x-1.5">
+                    <i class="fas fa-sync-alt"></i> <span>Resend Pass (Email + WhatsApp)</span>
+                </button>
+                <a id="modal-pass-link" href="#" target="_blank" class="block text-2xs text-blue-600 font-bold hover:underline pt-1">
+                    Open Digital Public Ticket Card <i class="fas fa-external-link-alt ml-0.5"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="add-student-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-pop">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h3 class="text-base font-extrabold text-slate-900">Add New Student</h3>
+                <button onclick="document.getElementById('add-student-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleCreateStudent(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Roll Number</label>
+                    <input type="text" id="new-roll-no" required placeholder="e.g. 26BCA115" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-800">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Student Full Name</label>
+                    <input type="text" id="new-name" required placeholder="Full Name" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Semester</label>
+                    <select id="new-semester" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-semibold">
+                        <option value="BCA 1st">BCA 1st Semester (Freshers)</option>
+                        <option value="BCA 3rd">BCA 3rd Semester (Seniors)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" id="new-email" required placeholder="student@gmail.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Phone / WhatsApp</label>
+                    <input type="text" id="new-phone" required placeholder="+91 9876543210" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                </div>
+
+                <div class="pt-3 flex space-x-2">
+                    <button type="submit" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition">
+                        Save &amp; Generate QR Pass
+                    </button>
+                    <button type="button" onclick="document.getElementById('add-student-modal').classList.add('hidden')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scanner Login with OTP Modal -->
+    <div id="admin-login-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-pop">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <div>
+                    <h3 class="text-base font-extrabold text-slate-900">Scanner Admin Login</h3>
+                    <p class="text-2xs text-slate-500">Authenticate device with 6-digit OTP</p>
+                </div>
+                <button onclick="document.getElementById('admin-login-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleScannerLogin(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Registered Scanner Email</label>
+                    <input type="email" id="login-admin-email" required placeholder="e.g. rahul.gate1@college.edu" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">6-Digit OTP Passcode</label>
+                    <input type="text" id="login-admin-otp" required maxlength="6" placeholder="e.g. 112233" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-center tracking-widest text-base font-black text-blue-700">
+                </div>
+
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition">
+                        Verify OTP &amp; Unlock Scanner
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register New Scanner Modal -->
+    <div id="register-scanner-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 animate-pop">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h3 class="text-base font-extrabold text-slate-900">Register Scanner Staff</h3>
+                <button onclick="document.getElementById('register-scanner-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form onsubmit="handleScannerRegister(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Staff / Gate Name</label>
+                    <input type="text" id="reg-name" required placeholder="e.g. Gate 4 - Rohan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" id="reg-email" required placeholder="rohan@college.edu" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Phone</label>
+                    <input type="text" id="reg-phone" placeholder="+91 9888877777" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                </div>
+
+                <div class="pt-3">
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition">
+                        Submit Registration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Scripts -->
+    <script src="/static/js/offline_sync.js"></script>
+    <script src="/static/js/scanner.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+        async function handleCreateStudent(e) {
+            e.preventDefault();
+            const payload = {
+                roll_no: document.getElementById('new-roll-no').value.trim(),
+                name: document.getElementById('new-name').value.trim(),
+                semester: document.getElementById('new-semester').value,
+                email: document.getElementById('new-email').value.trim(),
+                phone: document.getElementById('new-phone').value.trim(),
+            };
+            try {
+                const res = await fetch('/api/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast(d.message, 'success');
+                    document.getElementById('add-student-modal').classList.add('hidden');
+                    loadStudents();
+                    loadDashboardStats();
+                } else {
+                    showToast(d.message || 'Error adding student', 'error');
+                }
+            } catch (err) {
+                showToast('Error connecting to server', 'error');
+            }
+        }
+
+        async function handleScannerLogin(e) {
+            e.preventDefault();
+            const payload = {
+                email: document.getElementById('login-admin-email').value.trim(),
+                otp: document.getElementById('login-admin-otp').value.trim()
+            };
+            try {
+                const res = await fetch('/api/auth/scanner-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const d = await res.json();
+                if (d.success) {
+                    localStorage.setItem('event_admin_token', d.session_token);
+                    localStorage.setItem('event_admin_name', d.admin.name);
+                    document.getElementById('current-scanner-name').innerText = d.admin.name;
+                    showToast(`Welcome, ${d.admin.name}! Scanner Unlocked.`, 'success');
+                    document.getElementById('admin-login-modal').classList.add('hidden');
+                } else {
+                    showToast(d.message || 'Login failed', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        async function handleScannerRegister(e) {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('reg-name').value.trim(),
+                email: document.getElementById('reg-email').value.trim(),
+                phone: document.getElementById('reg-phone').value.trim(),
+            };
+            try {
+                const res = await fetch('/api/auth/scanner-register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const d = await res.json();
+                if (d.success) {
+                    showToast(d.message, 'success');
+                    document.getElementById('register-scanner-modal').classList.add('hidden');
+                    loadAdmins();
+                } else {
+                    showToast(d.message || 'Registration failed', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
